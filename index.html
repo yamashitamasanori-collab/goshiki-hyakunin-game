@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>五色百人一首（青）練習アプリ</title>
+    <style>
+        body { font-family: "Sawarabi Mincho", serif; background-color: #f0f8ff; display: flex; justify-content: center; padding: 20px; }
+        #game-container { background: white; width: 100%; max-width: 400px; padding: 20px; border-radius: 15px; shadow: 0 4px 10px rgba(0,0,0,0.1); border-top: 10px solid #007bff; }
+        .question { font-size: 1.4rem; font-weight: bold; margin-bottom: 20px; min-height: 80px; color: #333; }
+        .choices { display: grid; gap: 10px; }
+        button { padding: 15px; font-size: 1rem; cursor: pointer; border: 1px solid #ddd; border-radius: 8px; background: #fff; transition: 0.2s; }
+        button:hover { background: #e7f3ff; }
+        #result { margin-top: 20px; font-weight: bold; text-align: center; font-size: 1.2rem; }
+        .correct { color: #d9534f; } /* 赤色で正解を表示 */
+        .hidden { display: none; }
+    </style>
+</head>
+<body>
+
+<div id="game-container">
+    <h2>五色百人一首：青</h2>
+    <div id="quiz-area">
+        <div class="question" id="question">上の句がここに表示されます</div>
+        <div class="choices" id="choices">
+            </div>
+        <div id="result"></div>
+    </div>
+    <div id="score-area" class="hidden">
+        <h3>終了！</h3>
+        <p id="final-score"></p>
+        <button onclick="location.reload()">もう一度挑戦</button>
+    </div>
+</div>
+
+<script>
+    // 1. データの準備（青札の例：本来は20首分用意します）
+    const allData = [
+        { kami: "秋の田の 刈りほの庵の 苫をあらみ", shimo: "わが衣手は 露にぬれつつ", author: "天智天皇" },
+        { kami: "春すぎて 夏来にけらし 白妙の", shimo: "衣ほすてふ 天の香具山", author: "持統天皇" },
+        { kami: "田子の浦に うち出でてみれば 白妙の", shimo: "富士の高嶺に 雪は降りつつ", author: "山部赤人" },
+        { kami: "ひさかたの 光のどけき 春の日に", shimo: "しづ心なく 花の散るらむ", author: "紀友則" },
+        { kami: "めぐりあひて 見しやそれとも わかぬ間に", shimo: "夜半に紛れし 影のかなしさ", author: "紫式部" }
+    ];
+
+    let currentQuestionIndex = 0;
+    let score = 0;
+    let quizData = [];
+
+    // 2. ゲーム開始準備（シャッフル）
+    function initGame() {
+        quizData = allData.sort(() => Math.random() - 0.5).slice(0, 5); // 5問ランダム抽出
+        showQuestion();
+    }
+
+    // 3. 問題を表示する関数
+    function showQuestion() {
+        const q = quizData[currentQuestionIndex];
+        document.getElementById("question").innerText = q.kami;
+        const choicesDiv = document.getElementById("choices");
+        choicesDiv.innerHTML = ""; // 前のボタンを消去
+
+        // 選択肢の作成（正解1つ + 不正解3つ）
+        let choices = [q.shimo];
+        while (choices.length < 4) {
+            let dummy = allData[Math.floor(Math.random() * allData.length)].shimo;
+            if (!choices.includes(dummy)) choices.push(dummy);
+        }
+        choices.sort(() => Math.random() - 0.5); // 選択肢を混ぜる
+
+        choices.forEach(choice => {
+            const btn = document.createElement("button");
+            btn.innerText = choice;
+            btn.onclick = () => checkAnswer(choice, q.shimo);
+            choicesDiv.appendChild(btn);
+        });
+    }
+
+    // 4. 正誤判定
+    function checkAnswer(selected, correct) {
+        const resultDiv = document.getElementById("result");
+        if (selected === correct) {
+            score++;
+            resultDiv.innerText = "正解！";
+            resultDiv.className = "correct";
+        } else {
+            resultDiv.innerText = "残念！正解は：" + correct;
+            resultDiv.className = "";
+        }
+
+        // 1秒後に次の問題へ
+        setTimeout(() => {
+            resultDiv.innerText = "";
+            currentQuestionIndex++;
+            if (currentQuestionIndex < quizData.length) {
+                showQuestion();
+            } else {
+                showResult();
+            }
+        }, 1500);
+    }
+
+    // 5. 結果表示
+    function showResult() {
+        document.getElementById("quiz-area").classList.add("hidden");
+        document.getElementById("score-area").classList.remove("hidden");
+        document.getElementById("final-score").innerText = quizData.length + "問中 " + score + "問正解でした！";
+    }
+
+    initGame();
+</script>
+
+</body>
+</html>
